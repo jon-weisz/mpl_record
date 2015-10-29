@@ -14,6 +14,13 @@
 DEFINE_ASSOC_STRUCT(Record, MasterRecord, MASTER_RECORD_MEMBERS)
 DEFINE_ASSOC_STRUCT(Record, SubRecord, SUBRECORD_MEMBERS)
 
+int test_hand_copy()
+{
+    boost::fusion::Record::MasterRecord mr{5 , "test", 3.0};
+    boost::fusion::Record::SubRecord sr{ 2 , "foo"};
+    sr.a = mr.a;
+    sr.b = mr.b;
+}
 
 int test_copy()
 {
@@ -25,20 +32,6 @@ int test_copy()
 }
 
 
-
-int test_shared_keys()
-{
-    boost::fusion::Record::MasterRecord mr{5 , "test", 3.0};
-    boost::fusion::Record::SubRecord sr{ 2 , "foo"};
-
-    typedef typename get_keys<boost::fusion::Record::MasterRecord>::type SourceSequenceKeys;
-    typedef typename get_keys<boost::fusion::Record::SubRecord>::type TargetSequenceKeys;
-    typedef typename boost::fusion::result_of::filter_if<SourceSequenceKeys,boost::mpl::contains<TargetSequenceKeys, boost::mpl::_1 > >::type SharedKeys;
-    typedef typename boost::fusion::result_of::transform<SourceSequenceKeys, boost::mpl::contains<SharedKeys, boost::mpl::_1 > >::type contained_keys;
-    typedef boost::mpl::range_c<int, 0, boost::fusion::result_of::size<SourceSequenceKeys>::value>::type range;
-    copier_if_pattern<contained_keys, boost::fusion::Record::MasterRecord, boost::fusion::Record::SubRecord> copier_(mr, sr);
-    //boost::fusion::for_each(range(), copier_);
-}
 
 int main(int argc, char ** argv)
 {
