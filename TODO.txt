@@ -1,0 +1,67 @@
+TODOS: 
+1 - Test assignment speed
+2 - Write for_each_key function and metafunction
+3 - Write processor template
+4 - What graph properties do we need from the records?
+
+These are the basic requirements:
+depends<DataProcessor> 
+can_run<DataProcessor, MasterRecord>
+produces<DataProcessor>
+find_producer<depends<DataProcessor>::type
+recursive find_producer<depends<DataProcessor>::type
+   : base case sizeof<depends<DataProcessor>> = 0 -> 
+
+
+
+Then we can have each data processor have an approximate time cost and add new predicates:
+get_cost<DataProcessor>
+get_total_cost<DataProcessor>
+
+
+Then we can have add the predicates
+meets_deadline<DataProcessor, timeout>
+
+Then we can add a timeout field for fields with a required freshness to the record macro. 
+
+
+Then we can add a set of "recovery" routines for what to do when a processor is killed
+recover<DataProcessor> 
+
+
+schedulable<Dataprocessor>
+
+
+class RecordManager
+{
+// Fill the input record from mr;
+template<type InputRecordType>
+InputRecordType fillInput(const MasterRecord &);
+
+template<type OutputRecordType>
+outputTo(const OutputRecordType &, MasterRecord & mr);
+}
+
+
+class DataProcessor
+{
+DEFINE_RECORD(namespace, input_record_name, (type, name),(type, name))
+DEFINE_RECORD(namespace, output_record_name, (type, name),(type, name))
+
+typedef namespace::record_name input_type;
+typedef namespace::record_name output_type;
+
+input_type & input_;
+output_type & output_;
+
+DataProcessor(input_type * input, output_type * output) : input_(input), output_(output);
+
+bool run()
+{
+}
+
+}
+
+
+
+
