@@ -4,6 +4,7 @@
 #include <boost/fusion/algorithm.hpp>
 #include <boost/fusion/mpl.hpp>
 #include <boost/fusion/adapted/mpl.hpp>
+#include <boost/fusion/include/at_key.hpp>
 #include <boost/fusion/include/define_struct.hpp>
 #include <boost/fusion/include/define_assoc_struct.hpp>
 #include <boost/fusion/include/filter_if.hpp>
@@ -12,6 +13,7 @@
 #include <boost/fusion/include/has_key.hpp>
 #include <boost/fusion/include/iterator_range.hpp>
 #include <boost/mpl/arg.hpp>
+#include <boost/mpl/contains.hpp>
 #include <boost/mpl/has_key.hpp>
 #include <boost/mpl/range_c.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -75,15 +77,35 @@ struct copy_by_key
 {
     typedef typename get_keys<SourceSequence>::type SourceSequenceKeys;
     typedef typename get_keys<TargetSequence>::type TargetSequenceKeys;
-        //typedef typename boost::fusion::result_of::filter_if<SourceSequenceKeys, boost::mpl::contains<TargetSequenceKeys, boost::mpl::_1 > >::type SharedKeys;
+    typedef typename boost::fusion::result_of::filter_if<SourceSequenceKeys, boost::mpl::contains<TargetSequenceKeys, boost::mpl::_1 > >::type SharedKeys;
     typedef typename boost::mpl::range_c<int, 0, boost::fusion::result_of::size<SourceSequence>::value> range;
-        typedef typename get_keys<SourceSequence>::type keys;
+
 
     struct index_copier
     {
     SourceSequence &  from_;
     TargetSequence & to_;
     index_copier(SourceSequence & from, TargetSequence & to) : from_(from), to_(to){};
+
+        struct test_copier
+        {
+           SourceSequence &  from_;
+           TargetSequence & to_;
+           test_copier(SourceSequence & from, TargetSequence & to) : from_(from), to_(to){}
+
+                template<class T, typename boost::enable_if<typename boost::mpl::has_key<TargetSequence, T>::type,int>::type = 0>
+                void operator() (const T &t )const
+                {
+                        boost::fusion::at_key<T>(to_) = boost::fusion::at_key<T>(from_);
+                }
+                template<class T, typename boost::enable_if<typename boost::mpl::not_<typename boost::mpl::has_key<TargetSequence, T>::type>::type,int>::type = 0>
+                void operator() (const T &t )const
+                {
+                        //print_info()(t);
+                }
+
+        };
+      
 
         template <class T, class Enable=void>
         struct key_copier{
@@ -100,7 +122,7 @@ struct copy_by_key
         };
 
         template<class T>
-        struct key_copier<T, typename boost::enable_if<typename boost::mpl::has_key<TargetSequence, T>, int>::type>
+        struct key_copier<T, typename boost::enable_if<boost::mpl::has_key<TargetSequence, T>, int>::type>
         {
             SourceSequence &  from_;
             TargetSequence & to_;
@@ -116,7 +138,8 @@ struct copy_by_key
         inline void operator() (const I & t) const
         {
             typename boost::fusion::extension::struct_assoc_key<SourceSequence, I::value>::type key;
-            key_copier<typename boost::fusion::extension::struct_assoc_key<SourceSequence, I::value>::type> copier_(from_, to_);
+            //key_copier<typename boost::fusion::extension::struct_assoc_key<SourceSequence, I::value>::type> copier_(from_, to_);
+            test_copier copier_(from_, to_);
             copier_(key);
         }
 
@@ -128,5 +151,55 @@ struct copy_by_key
             boost::fusion::for_each(range(), copier_);
     }
 };
+
+
+
+
+
+
+/* @brief - Second attempt to enable copies.
+ *
+ *
+ */
+template <class contained_keys, class SourceSequence, class TargetSequence>
+struct copier_if_pattern
+{
+
+    SourceSequence & sk_;
+    TargetSequence & tk_;
+    copier_if_pattern(SourceSequence sk, TargetSequence tk) : sk_(sk), tk_(tk){}
+
+    template< class key>
+    struct actual_copier
+    {
+        void operator()(SourceSequence & sk, TargetSequence & tk)
+            {
+                boost::fusion::at_key<TargetSequence, key>(tk) = boost::fusion::at_key<SourceSequence, key>(sk);
+            }
+    };
+
+
+    template<class key>
+    struct do_nothing
+    {
+        void operator()(SourceSequence & sk, TargetSequence tk)
+       {
+       }
+    };
+
+    template <class I>
+    void operator()(const I & i ) const
+    {
+        typedef typename boost::fusion::extension::struct_assoc_key<SourceSequence, I::value>::type key;
+        typedef typename boost::mpl::at<contained_keys, I>::type has_key;
+        typedef actual_copier<key> actual_copier_;
+        typedef do_nothing<key> do_nothing_;
+
+        typedef typename boost::mpl::if_<
+            has_key, actual_copier_, do_nothing_>::type copy_impl;
+        copy_impl(sk_, tk_);
+    }
+};
+
 
 #endif
