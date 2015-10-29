@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 2.8)
+project(mpl_test)
+set (TEST_CC off)
+if(${TEST_CC})
+set(CMAKE_SYSTEM_NAME Generic)
+endif(${TEST_CC})
+
+find_package(Boost)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fdump-rtl-all")
+set(INCLUDE_FILES mpl_debug_tools.hpp mpl_record_copy.hpp)
+set(SOURCE_FILES mpl_record_test)
+include_directories(${Boost_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR})
+add_executable(mpl_record_test ${SOURCE_FILES} ${INCLUDE_FILES})
+add_executable(visitor_test visitor_test.cpp)
+#execute_process(COMMAND g++ -e visitor_test.cpp OUTPUT_FILE visitor_test_preprocessed.cpp)
+add_executable(test_macros test_macros.cpp record_macros.hpp)
