@@ -226,6 +226,9 @@ int main()
                                      initial_map,
                                      boost::fusion::Record::MasterRecord>::type>::type preorder_inc;
 
+        print_nested_for_each<print_name> nested_print;
+        boost::mpl::at<preorder_inc,finished_path_list>::type results;
+        nested_print(results);
 
        //typedef typename append_to_key<initial_map, finished_path_list, int>::type test_add_int;
        //print_name()(test_add_int());
