@@ -226,9 +226,7 @@ int main()
                                      initial_map,
                                      boost::fusion::Record::MasterRecord>::type>::type preorder_inc;
 
-        print_nested_for_each<print_name> nested_print;
-        boost::mpl::at<preorder_inc,finished_path_list>::type results;
-        nested_print(results);
+
 
        //typedef typename append_to_key<initial_map, finished_path_list, int>::type test_add_int;
        //print_name()(test_add_int());
@@ -236,7 +234,9 @@ int main()
         //print_name()(boost::mpl::size<boost::mpl::at<test_add_int,finished_path_list>::type>::type());
         std::cout << "num_input_edges: " << boost::msm::mpl_graph::num_edges<input_edge_graph>::value << "\n" ;
         std::cout << "num_output_edges: " << boost::msm::mpl_graph::num_edges<output_edge_graph>::value << "\n" ;
-        boost::fusion::for_each(boost::mpl::at<preorder_inc,finished_path_list>::type(),print_name_for_each()) ;
+        print_nested_for_each<print_name> nested_print;
+        boost::mpl::at<preorder_inc,finished_path_list>::type results;
+        nested_print(results);
 
         //boost::fusion::for_each(typename output_edge_graph::data(), print_keyname());
 

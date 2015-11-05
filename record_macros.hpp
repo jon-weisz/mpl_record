@@ -21,22 +21,34 @@
 #define GET_STR_AUX(_, i, str) (sizeof(str) > (i) ? str[(i)] : 0),
 #define GET_STR(str) BOOST_PP_REPEAT(64,GET_STR_AUX,str) 0
 
+struct key_type_tag;
+
 template <class t, char... Name> struct key_type
 {
         typedef t type;
-        // template<char first, char...Rest>
-        // static std::string key_name_impl(){
-        //         return std::string(first) + key_name_impl<Rest...>();
-        // }
+        typedef key_type_tag tag;
 
-        // template<char last>
-        // static std::string key_name_impl(){
-        //         return std::string(last);
-        // }
-        // static std::string key_name(){
-        //         return key_name_impl<Name...>();
-        // }
+
+    template<char last>
+    static std::string key_name_impl(){
+        std::string l;
+        l+=last;
+        return l;
+    }
+
+        template<char first, char second, char...Rest>
+        static std::string key_name_impl(){
+            std::string f;
+            f+=first;
+            bool done = second;
+            return f +  (done?key_name_impl<second, Rest...>(): "") ;
+        }
+
+        static std::string key_name(){
+                 return key_name_impl<Name...>();
+        }
 };
+
 
 
 #define SUBRECORD_MEMBERS_FAIL_NAME                     \
@@ -62,7 +74,7 @@ template <class t, char... Name> struct key_type
 namespace boost{\
   namespace fusion{\
    namespace ns{\
-           typedef key_type< BOOST_PP_TUPLE_ELEM(2, 0, key_tuple), GET_STR(BOOST_PP_STRINGIZE(GENERATE_TUPLE_KEY_NAME(key_tuple)))> GENERATE_TUPLE_KEY_NAME(key_tuple); \
+           typedef key_type< BOOST_PP_TUPLE_ELEM(2, 0, key_tuple), GET_STR(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 1, key_tuple)))> GENERATE_TUPLE_KEY_NAME(key_tuple); \
     };\
   };\
 };\

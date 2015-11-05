@@ -55,11 +55,15 @@ struct print{
       std::cout << indent() << std::boolalpha << t << '\n';
     }
 };
-on:
+
 struct print_name
 {
-        templaton:e <typename T, enable_if<boost::is_same<typename boost::is_same<typename boost::fusion::traits::tag_of<T>::type,:
-                void operator()
+
+        template <class T, typename boost::enable_if<typename boost::is_same<typename T::tag, key_type_tag>::type, int>::type = 0>
+        void operator()(const T & t)
+        {
+            std::cout <<indent() << "key name:" <<t.key_name() << std::endl;
+        }
 
         template <typename T>
         void operator()(const T &t) const
